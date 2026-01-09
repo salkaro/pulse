@@ -3,7 +3,6 @@
 import nodemailer from 'nodemailer';
 import { IDomain } from '@/models/domain';
 import { IEmailTemplate } from '@/models/automation';
-import { generateDKIMSignature } from '@/utils/email-signing';
 
 interface SendEmailOptions {
     domain: IDomain;
@@ -187,25 +186,18 @@ export async function sendEmail({
             },
         });
 
-        // Prepare email headers for DKIM signing
+        // Prepare email headers
         // Use SMTP_USER as the sender to avoid relay errors
         const fromName = processedTemplate.footer.teamName || 'Support';
         const fromEmail = process.env.SMTP_USER || processedTemplate.footer.supportEmail;
         const replyToEmail = processedTemplate.footer.supportEmail;
-        const date = new Date().toUTCString();
         const subject = processedTemplate.subject;
 
-        // Generate DKIM signature
-        const dkimSignature = generateDKIMSignature({
-            privateKey: domain.dkimPrivateKey,
-            selector: domain.dkimSelector,
-            domain: domain.domain,
-            headers: ['from', 'to', 'subject', 'date'],
-            body: htmlContent,
-            canonicalization: 'relaxed/relaxed',
-        });
+        // For centralized sending (Option A), let Zoho handle DKIM automatically
+        // Zoho will sign emails with salkaro.com DKIM, which matches the sender domain
+        // Using a different domain's DKIM signature would cause validation failures
 
-        // Send email
+        // Send email (Zoho adds DKIM signature automatically)
         const info = await transporter.sendMail({
             from: `${fromName} <${fromEmail}>`,
             replyTo: replyToEmail,
@@ -213,10 +205,6 @@ export async function sendEmail({
             subject: subject,
             html: htmlContent,
             text: processedTemplate.previewText || undefined,
-            headers: {
-                'DKIM-Signature': dkimSignature,
-                'Date': date,
-            },
         });
 
         return {
