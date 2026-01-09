@@ -1,0 +1,13 @@
+export const tokensCookieKey = "tokens";
+export const membersCookieKey = "members";
+export const invitesCookieKey = "invites";
+export const paymentsCookieKey = "payments";
+export const entitiesCookieKey = "entities";
+export const ticketsCookieKey = "tickets";
+export const invoicesCookieKey = "invoices";
+export const customersCookieKey = "customers";
+export const connectionsCookieKey = "connections";
+export const organisationCookieKey = "organisation";
+export const subscriptionsCookieKey = "subscriptions";
+export const automationsCookieKey = "automations";
+export const domainsCookieKey = "domains";
