@@ -24,6 +24,16 @@ function generateEmailHTML(template: IEmailTemplate): string {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${template.title}</title>
+    ${header.logoUrl ? `
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "${footer.teamName}",
+      "logo": "${header.logoUrl}"
+    }
+    </script>
+    ` : ''}
 </head>
 <body style="margin: 0; padding: 0; font-family: ${styling.fontFamily}; background-color: ${styling.backgroundColor};">
     <table role="presentation" style="width: 100%; border-collapse: collapse;">
@@ -33,7 +43,7 @@ function generateEmailHTML(template: IEmailTemplate): string {
                     <!-- Header -->
                     <tr>
                         <td style="padding: 40px 40px 20px; text-align: center; border-bottom: 1px solid #e5e7eb;">
-                            ${header.logoUrl ? `<img src="${header.logoUrl}" alt="Logo" style="height: 48px; margin-bottom: 16px;">` : ''}
+                            ${header.logoUrl ? `<img src="${header.logoUrl}" alt="Logo" style="width: 64px; height: 64px; border-radius: 50%; object-fit: cover; margin-bottom: 16px;">` : ''}
                             <h1 style="margin: 0 0 8px; font-size: 28px; font-weight: bold; color: ${styling.primaryColor};">
                                 ${header.headline}
                             </h1>
@@ -53,11 +63,11 @@ function generateEmailHTML(template: IEmailTemplate): string {
                             </p>
 
                             ${body.mainContent && body.mainContent.length > 0 ? `
-                            <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #f9fafb; border-radius: 8px; padding: 16px; margin: 16px 0;">
+                            <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #f9fafb; border-radius: 8px; margin: 16px 0;">
                                 <tr>
-                                    <td>
-                                        ${body.mainContent[0] ? `<p style="margin: 0 0 8px; font-size: 14px; font-weight: 500; color: #111827;">${body.mainContent[0]}</p>` : ''}
-                                        ${body.mainContent.slice(1).map(feature => `<p style="margin: 8px 0; font-size: 14px; color: #374151;">• ${feature}</p>`).join('')}
+                                    <td style="padding: 20px;">
+                                        ${body.mainContent[0] ? `<p style="margin: 0 0 12px; font-size: 14px; font-weight: 500; color: #111827;">${body.mainContent[0]}</p>` : ''}
+                                        ${body.mainContent.slice(1).map(feature => `<p style="margin: 0 0 10px; padding-left: 4px; padding-top: 4px; font-size: 14px; color: #374151;">• ${feature}</p>`).join('')}
                                     </td>
                                 </tr>
                             </table>
