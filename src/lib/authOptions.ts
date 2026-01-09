@@ -22,7 +22,7 @@ export const authOptions: NextAuthOptions = {
                 sameSite: "lax",
                 path: "/",
                 secure: isProduction,
-                domain: isProduction ? `/${root.replace("https://", "")}` : undefined,
+                domain: isProduction ? `.${root.replace("https://", "")}` : undefined,
             },
         },
     },
