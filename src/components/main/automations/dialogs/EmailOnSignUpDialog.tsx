@@ -74,9 +74,22 @@ const EmailOnSignUpDialog: React.FC<Props> = ({
                     featureTwo: template.body.mainContent[2] || "Feature two that saves time",
                     featureThree: template.body.mainContent[3] || "Feature three that improves results",
                 })
+            } else {
+                // Reset to defaults if no existing automation
+                setValues({
+                    entityName: entityName,
+                    logoUrl: "",
+                    firstName: "{{firstName}}",
+                    dashboardUrl: "https://app.example.com",
+                    entityDomain: "example.com",
+                    companyAddress: "123 Main St, City, Country",
+                    featureOne: "Feature one that provides value",
+                    featureTwo: "Feature two that saves time",
+                    featureThree: "Feature three that improves results",
+                })
             }
         }
-    }, [open, automations, loading, automationId])
+    }, [open, automations, loading, automationId, entityName])
 
     const handleValueChange = (key: string, value: string) => {
         setValues(prev => ({ ...prev, [key]: value }))

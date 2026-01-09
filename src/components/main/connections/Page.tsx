@@ -108,7 +108,7 @@ const Page = () => {
         );
     }
 
-    if (!entities || entities.length === 0) {
+    if (entities && entities.length === 0) {
         return (
             <NoEntityFound />
         )

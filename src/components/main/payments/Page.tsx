@@ -22,7 +22,7 @@ import NoEntityFound from '@/components/ui/no-entity-found'
 
 const Page = () => {
     const { organisation, loading } = useOrganisation();
-    const { entities } = useEntities(organisation?.id as string);
+    const { entities, loading: loadingEntities } = useEntities(organisation?.id as string);
     const { connections, loading: loadingConnections } = useConnections(organisation?.id ?? null);
     const [filter, setFilter] = useState<FilterLongType>('all');
 
@@ -52,7 +52,7 @@ const Page = () => {
         return <NoContent text="Organisation not found" />;
     }
 
-    if (!entities || entities.length === 0) {
+    if (!loadingEntities && entities && entities.length === 0) {
         return <NoEntityFound />
     }
 

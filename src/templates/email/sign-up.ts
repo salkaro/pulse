@@ -39,7 +39,7 @@ export const template1 = {
 
     footer: {
         signOff: "Cheers,",
-        teamName: "The {{entityName}} Team",
+        teamName: "{{entityName}}",
 
         supportEmail: "support@{{entityDomain}}",
 

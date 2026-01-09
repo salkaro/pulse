@@ -30,12 +30,12 @@ const Page = () => {
     }
 
     if (organisation?.subscription === "free") {
-        return <FeatureNotIncluded 
-        featureName='Automations' 
-        subscriptionRequired='starter'
-        features={[
-            "Email customers on sign up"
-        ]}
+        return <FeatureNotIncluded
+            featureName='Automations'
+            subscriptionRequired='starter'
+            features={[
+                "Email customers on sign up"
+            ]}
         />
     }
 
@@ -51,7 +51,7 @@ const Page = () => {
                     />
                 ))}
 
-                {(!entities || entities.length === 0) && (
+                {!loading && entities && entities.length === 0 && (
                     <NoEntityFound />
                 )}
             </div>
