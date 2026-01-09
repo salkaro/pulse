@@ -188,7 +188,10 @@ export async function sendEmail({
         });
 
         // Prepare email headers for DKIM signing
-        const fromEmail = `${processedTemplate.footer.supportEmail}`;
+        // Use SMTP_USER as the sender to avoid relay errors
+        const fromName = processedTemplate.footer.teamName || 'Support';
+        const fromEmail = process.env.SMTP_USER || processedTemplate.footer.supportEmail;
+        const replyToEmail = processedTemplate.footer.supportEmail;
         const date = new Date().toUTCString();
         const subject = processedTemplate.subject;
 
@@ -204,7 +207,8 @@ export async function sendEmail({
 
         // Send email
         const info = await transporter.sendMail({
-            from: fromEmail,
+            from: `${fromName} <${fromEmail}>`,
+            replyTo: replyToEmail,
             to: to,
             subject: subject,
             html: htmlContent,

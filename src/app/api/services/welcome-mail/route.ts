@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { firestoreAdmin } from "@/lib/firebase/config-admin";
-import { organisationsCol, getAutomationsPath, getTokensPath } from "@/constants/collections";
+import { getAutomationsPath, getTokensPath } from "@/constants/collections";
 import { retrieveEntity } from "@/services/firebase/entities/retrieve";
 import { retrieveDomains } from "@/services/firebase/domains/retrieve";
 import { sendEmail } from "@/services/email/send";
