@@ -1,7 +1,7 @@
 "use server";
 
 // Local Imports
-import { firestoreAdmin } from "@/lib/firebase/config-admin";
+import { firestoreAdmin, admin } from "@/lib/firebase/config-admin";
 import { getConnectionsPath } from "@/constants/collections";
 
 export async function updateConnection({
@@ -13,7 +13,6 @@ export async function updateConnection({
     organisationId: string;
     updates: {
         entityId?: string | null;
-        entityName?: string | null;
         status?: string;
         lastSyncedAt?: number;
         error?: string;
@@ -31,11 +30,12 @@ export async function updateConnection({
             return { success: false, error: "Connection not found" };
         }
 
-        // Filter out undefined values and handle null explicitly
+        // Filter out undefined values and convert null to FieldValue.delete()
         const filteredUpdates: Record<string, unknown> = {};
         Object.entries(updates).forEach(([key, value]) => {
             if (value !== undefined) {
-                filteredUpdates[key] = value;
+                // Use FieldValue.delete() to actually remove the field from Firestore
+                filteredUpdates[key] = value === null ? admin.firestore.FieldValue.delete() : value;
             }
         });
 

@@ -2,8 +2,9 @@
 
 // Local Imports
 import { ConnectionType } from "@/models/connection";
-import { firestoreAdmin } from "@/lib/firebase/config-admin";
-import { getConnectionsPath } from "@/constants/collections";
+import { firestoreAdmin, admin } from "@/lib/firebase/config-admin";
+import { getConnectionsPath, getEntitiesPath } from "@/constants/collections";
+import { IConnection } from "@/models/connection";
 
 export async function deleteConnection({
     organisationId,
@@ -25,7 +26,24 @@ export async function deleteConnection({
             return false;
         }
 
-        await snapshot.docs[0].ref.delete();
+        const connectionDoc = snapshot.docs[0];
+        const connection = connectionDoc.data() as IConnection;
+
+        // If connection is attached to an entity, remove the connection reference from the entity
+        if (connection.entityId) {
+            const connectionFieldKey = `${type}ConnectionId`;
+            const path = getEntitiesPath(organisationId);
+            const entityRef = firestoreAdmin
+                .collection(path)
+                .doc(connection.entityId);
+
+            await entityRef.update({
+                [`connections.${connectionFieldKey}`]: admin.firestore.FieldValue.delete()
+            });
+        }
+
+        // Delete the connection document
+        await connectionDoc.ref.delete();
         return true;
     } catch (error) {
         console.error("Error deleting connection:", error);

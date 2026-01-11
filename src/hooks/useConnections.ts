@@ -6,7 +6,7 @@ import { useState, useEffect, useCallback } from "react";
 // Local Imports
 import { IConnection } from "@/models/connection";
 import { connectionsCookieKey } from "@/constants/cookies";
-import { getCookie, setCookie } from "@/utils/cookie-handlers";
+import { getCookie, setCookie, removeCookie } from "@/utils/cookie-handlers";
 
 interface UseConnectionsReturn {
     connections: IConnection[] | null;
@@ -70,8 +70,13 @@ export function useConnections(organisationId: string | null): UseConnectionsRet
     }, [fetchConnections]);
 
     const refetch = useCallback(async () => {
+        // Clear the cache before refetching
+        if (organisationId) {
+            const cookieKey = `${organisationId}_${connectionsCookieKey}`;
+            removeCookie(cookieKey);
+        }
         await fetchConnections({ reload: true });
-    }, [fetchConnections]);
+    }, [fetchConnections, organisationId]);
 
     return { connections, loading, error, refetch };
 }

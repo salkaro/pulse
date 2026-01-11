@@ -93,7 +93,7 @@ const AttachEntityDialog: React.FC<Props> = ({
                 </DialogHeader>
 
                 <div className="max-h-100 overflow-y-auto pr-4">
-                    <div className="space-y-3 py-4">
+                    <div className="space-y-3 py-4 mx-2">
                         {availableEntities.length === 0 ? (
                             <div className="p-8 text-sm text-muted-foreground text-center">
                                 {entities.length === 0

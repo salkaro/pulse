@@ -8,6 +8,7 @@ import { useOrganisation } from '@/hooks/useOrganisation'
 import { useEntities } from '@/hooks/useEntities'
 import { useConnections } from '@/hooks/useConnections'
 import { Separator } from '@/components/ui/separator'
+import { Button } from '@/components/ui/button'
 
 // External Imports
 import { useEffect, useState } from 'react'
@@ -16,12 +17,14 @@ import { entityLimits } from '@/constants/limits'
 import { SubscriptionType } from '@/models/organisation'
 import { extractDescriptionForProvider, extractNameForProvider } from '@/utils/extract'
 import NoEntityFound from '@/components/ui/no-entity-found'
+import { RefreshCw } from 'lucide-react'
 
 const Page = () => {
     const { organisation } = useOrganisation();
     const { entities } = useEntities(organisation?.id ?? null);
     const { connections, loading: isLoading, refetch: refetchConnections } = useConnections(organisation?.id ?? null);
     const [isDetaching, setIsDetaching] = useState(false);
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
     useEffect(() => {
         // Check for OAuth callback messages
@@ -41,8 +44,21 @@ const Page = () => {
             window.history.replaceState({}, '', window.location.pathname);
             refetchConnections();
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    const handleRefresh = async () => {
+        setIsRefreshing(true);
+        try {
+            await refetchConnections();
+            toast.success('Connections refreshed');
+        } catch (error) {
+            console.error('Error refreshing connections:', error);
+            toast.error('Failed to refresh connections');
+        } finally {
+            setIsRefreshing(false);
+        }
+    };
 
     const handleDetach = async (connectionId: string) => {
         if (!connectionId) return;
@@ -74,7 +90,7 @@ const Page = () => {
     const getIconForType = (type: string) => {
         switch (type) {
             case 'stripe':
-                return <StripeIcon size={48}/>;
+                return <StripeIcon size={48} />;
             case 'google':
                 return <GoogleIcon size={48} />;
             default:
@@ -117,12 +133,39 @@ const Page = () => {
 
     return (
         <div className='flex flex-col w-full gap-6'>
+            {attachedConnections.length === 0 && (
+                <div className='flex items-center justify-end'>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleRefresh}
+                        disabled={isRefreshing}
+                        className="gap-2"
+                    >
+                        <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                        Refresh
+                    </Button>
+                </div>
+            )}
+
             {/* Attached Connections Section */}
             {attachedConnections.length > 0 && (
                 <div className='space-y-4'>
                     <div>
                         <h2 className="text-lg font-semibold">Attached</h2>
                         <p className="text-sm text-muted-foreground">Connections linked to entities</p>
+                        <div className='flex items-center justify-end'>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={handleRefresh}
+                                disabled={isRefreshing}
+                                className="gap-2"
+                            >
+                                <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                                Refresh
+                            </Button>
+                        </div>
                     </div>
                     <Separator />
                     <div className='flex flex-col gap-4'>
@@ -179,7 +222,7 @@ const Page = () => {
                     {!hasStripeConnection && (
                         <Connection
                             key="stripe"
-                            icon={<StripeIcon size={48}/>}
+                            icon={<StripeIcon size={48} />}
                             type="stripe"
                             name="Stripe"
                             description="Connect your Stripe account to monitor payments, customers, disputes and more"
@@ -202,7 +245,7 @@ const Page = () => {
                     {(hasStripeConnection && stripeConnectionCount < maxEntityConnections) && (
                         <Connection
                             key="stripe-add"
-                            icon={<StripeIcon size={48}/>}
+                            icon={<StripeIcon size={48} />}
                             type="stripe"
                             name="Stripe"
                             description="Connect another Stripe account"

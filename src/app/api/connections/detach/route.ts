@@ -46,7 +46,6 @@ export async function POST(request: NextRequest) {
             organisationId: session.user.organisation.id,
             updates: {
                 entityId: null,
-                entityName: null,
             },
         });
 

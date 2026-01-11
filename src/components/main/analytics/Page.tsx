@@ -157,13 +157,41 @@ const Page = () => {
                 <Separator />
             </div>
 
-            {/* Loading State */}
+            {/* Loading State - Initial Load */}
             {loadingAnalytics && !data && (
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {[...Array(6)].map((_, i) => (
-                        <Skeleton key={i} className="h-32 w-full rounded-lg" />
-                    ))}
-                </div>
+                <>
+                    <div className="flex items-center justify-center py-8">
+                        <div className="flex flex-col items-center gap-3">
+                            <div className="rounded-full bg-muted p-4">
+                                <BarChart3 className="h-8 w-8 animate-pulse" style={{ color: Colors.google }} />
+                            </div>
+                            <p className="text-sm font-medium">Fetching analytics data...</p>
+                            <p className="text-xs text-muted-foreground">This may take a few moments</p>
+                        </div>
+                    </div>
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        {[...Array(6)].map((_, i) => (
+                            <Skeleton key={i} className="h-32 w-full rounded-lg" />
+                        ))}
+                    </div>
+                </>
+            )}
+
+            {/* Loading State - Refreshing Existing Data */}
+            {loadingAnalytics && data && (
+                <Card className="border-blue-200 bg-blue-50">
+                    <CardContent className="pt-6">
+                        <div className="flex items-center gap-3">
+                            <div className="rounded-full bg-blue-100 p-2">
+                                <BarChart3 className="h-5 w-5 text-blue-600 animate-pulse" />
+                            </div>
+                            <div className="flex-1">
+                                <p className="font-medium text-blue-900">Refreshing analytics data...</p>
+                                <p className="text-sm text-blue-700 mt-1">Fetching the latest metrics from Google Analytics</p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
             )}
 
             {/* Error State */}
@@ -192,7 +220,7 @@ const Page = () => {
             )}
 
             {/* Analytics Data */}
-            {!loadingAnalytics && data && selectedPropertyId && (
+            {data && selectedPropertyId && (
                 <>
                     {/* Key Metrics */}
                     {data.metrics && (

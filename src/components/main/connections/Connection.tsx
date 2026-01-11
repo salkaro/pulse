@@ -43,6 +43,11 @@ const Connection: React.FC<Props> = ({
     const isConnected = connection?.status === 'connected';
     const isAttached = !!connection?.entityId;
 
+    // Find the attached entity by matching entityId
+    const attachedEntity = connection?.entityId
+        ? entities.find(entity => entity.id === connection.entityId)
+        : undefined;
+
     const handleConnect = async () => {
         if (isConnected) {
             // Handle disconnect
@@ -112,9 +117,9 @@ const Connection: React.FC<Props> = ({
                                 />
                             </span>
                         </div>
-                        {isAttached && connection?.entityName && (
+                        {isAttached && attachedEntity && (
                             <Badge variant="secondary" className="text-xs">
-                                {connection.entityName}
+                                {attachedEntity.name}
                             </Badge>
                         )}
                     </div>
