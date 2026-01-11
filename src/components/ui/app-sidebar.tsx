@@ -1,6 +1,6 @@
 "use client";
 
-import { Store, ChevronRight, ChevronsUpDown } from "lucide-react"
+import { ChevronRight } from "lucide-react"
 
 import {
     Sidebar,

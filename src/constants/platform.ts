@@ -1,6 +1,6 @@
 import { LayoutGridIcon } from "@/components/icons/icons";
 import { AutomationType } from "@/models/automation";
-import { LucideIcon, UserRound, Wallet, Store, Table2, FilePlusCorner, UsersRound, ArrowLeftRight, ChartLine, GalleryThumbnails, UserLock, MousePointerClick, Mail, GlobeLock } from "lucide-react";
+import { LucideIcon, UserRound, Wallet, Store, Table2, FilePlusCorner, UsersRound, ArrowLeftRight, ChartLine, GalleryThumbnails, UserLock, MousePointerClick, Mail, GlobeLock, FileChartPie, PencilRuler, Blend } from "lucide-react";
 
 
 export interface AutomationOption {
@@ -94,6 +94,13 @@ export const sidebarItems = {
     ] as IItem[],
     internal: [
         {
+            title: "Reports",
+            url: "/reports",
+            icon: FileChartPie,
+            description: "Generate reports",
+            type: "page" as const
+        },
+        {
             title: "Employee Mangement",
             url: "/employee-management",
             icon: UserLock,
@@ -105,6 +112,13 @@ export const sidebarItems = {
             url: "/domains",
             icon: GlobeLock,
             description: "Overview of domains",
+            type: "page" as const
+        },
+        {
+            title: "Internal Tools",
+            url: "/internal-tools",
+            icon: Blend,
+            description: "Internal Tools",
             type: "page" as const
         },
     ] as IItem[],

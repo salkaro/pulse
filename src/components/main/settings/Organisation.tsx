@@ -122,12 +122,6 @@ const Organisation = () => {
                                         </div>
                                     )}
                                 </div>
-                                <div className="flex-1">
-                                    <p className="text-sm font-medium">Organisation Logo</p>
-                                    <p className="text-xs text-muted-foreground">
-                                        {hasLevelFourAccess ? 'Click to upload logo' : 'Contact admin to change logo'}
-                                    </p>
-                                </div>
                             </div>
 
                             {hasLevelThreeAccess && (

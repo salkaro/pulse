@@ -14,6 +14,7 @@ import { Loader2Icon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { sendWelcomeEmail } from "@/services/pulse/send-welcome-email";
 
 
 const OnboardingForm = () => {
@@ -67,6 +68,20 @@ const OnboardingForm = () => {
                     const { error } = await joinOrganisationAdmin({ code: joinCode.trim(), uid: session?.user.id as string, firstname, lastname })
                     if (error) throw error;
                     toast.success("Joined organisation successfully!")
+                }
+
+
+                // Send welcome email via Pulse API
+                if (session?.user?.email) {
+                    const welcomeEmailResult = await sendWelcomeEmail({
+                        customerEmail: session.user.email,
+                        customerName: firstname,
+                    });
+
+                    if (!welcomeEmailResult.success) {
+                        console.error('Failed to send welcome email:', welcomeEmailResult.error);
+                        // Don't block onboarding if email fails, just log it
+                    }
                 }
 
                 router.push(`/preparing`);

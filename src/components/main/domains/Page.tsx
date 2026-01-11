@@ -13,11 +13,12 @@ import { domainLimits } from '@/constants/limits'
 import { useDomains } from '@/hooks/useDomains'
 import LimitReached from '@/components/ui/limit-reached'
 import FeatureNotIncluded from '@/components/ui/feature-not-included'
+import { Skeleton } from '@/components/ui/skeleton'
 
 const Page = () => {
     const { data: session } = useSession()
-    const { organisation } = useOrganisation()
-    const { domains, refetch } = useDomains(organisation?.id ?? null)
+    const { organisation, loading: loadingOrganisation } = useOrganisation()
+    const { domains, refetch, loading: loadingDomains } = useDomains(organisation?.id ?? null)
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
     const [selectedDomain, setSelectedDomain] = useState<IDomain | null>(null)
 
@@ -33,9 +34,10 @@ const Page = () => {
         await refetch()
     }
 
-    if (limit === 0) {
+    // Check if feature is not included first (before showing loading state)
+    if (!loadingOrganisation && limit === 0) {
         return (
-            <FeatureNotIncluded 
+            <FeatureNotIncluded
                 featureName='Domains'
                 subscriptionRequired='starter'
                 features={[
@@ -44,6 +46,20 @@ const Page = () => {
                     "Custom ticket domain"
                 ]}
             />
+        )
+    }
+
+    if (loadingOrganisation || loadingDomains) {
+        return (
+            <div className="space-y-6 mt-8">
+                <div className="flex items-center justify-between">
+                    <Skeleton className="h-10 w-32" />
+                </div>
+                <DomainsTable
+                    organisationId={organisation?.id ?? ''}
+                    onViewDomain={handleViewDomain}
+                />
+            </div>
         )
     }
 

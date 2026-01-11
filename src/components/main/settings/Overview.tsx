@@ -17,7 +17,6 @@ import { Camera, Loader2Icon } from "lucide-react"
 import { useSession } from "next-auth/react"
 import { useState } from "react"
 import { toast } from "sonner"
-import { ModeToggle } from "@/components/theme-toggle"
 import Image from "next/image"
 
 const Overview = () => {
@@ -78,7 +77,7 @@ const Overview = () => {
                     <h3 className="text-lg font-medium">Personal</h3>
                     <p className="text-muted-foreground text-sm">Your personal information</p>
                 </div>
-                <ModeToggle />
+                {/*<ModeToggle />*/}
             </div>
 
             <Card>
@@ -108,10 +107,6 @@ const Overview = () => {
                             <div className="absolute inset-0 bg-black/60 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                 <Camera className="w-8 h-8 text-white" />
                             </div>
-                        </div>
-                        <div className="flex-1">
-                            <p className="text-sm font-medium">Profile Picture</p>
-                            <p className="text-xs text-muted-foreground">Click to upload image</p>
                         </div>
                     </div>
 

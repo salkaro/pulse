@@ -15,8 +15,11 @@ import { extractOneTimeOrRecurring } from "@/services/stripe/utils";
 interface UseChargesReturn {
     chargesByConnection: Record<string, ICharge[]> | null;
     loading: boolean;
+    loadingMore: boolean;
     error: string | null;
     refetch: () => Promise<void>;
+    loadMore: () => Promise<void>;
+    hasMore: Record<string, boolean>;
 }
 
 interface UseChargesParams {
@@ -32,7 +35,9 @@ export function useCharges(params: UseChargesParams | string | null): UseCharges
     const to = typeof params === 'object' && params !== null ? params.to : undefined;
     const [chargesByConnection, setChargesByConnection] = useState<Record<string, ICharge[]> | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
+    const [loadingMore, setLoadingMore] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
+    const [hasMore, setHasMore] = useState<Record<string, boolean>>({});
 
     const fetchCharges = useCallback(
         async ({ reload = false } = {}) => {
@@ -75,15 +80,17 @@ export function useCharges(params: UseChargesParams | string | null): UseCharges
 
                 // Step 3: Fetch payments for each Stripe connection
                 const chargesDict: Record<string, ICharge[]> = {};
+                const hasMoreDict: Record<string, boolean> = {};
 
                 await Promise.all(
                     stripeConnections.map(async (connection) => {
-                        const { payments: fetched, error: err } = await retrieveStripePayments({
+                        const { payments: fetched, hasMore: more, error: err } = await retrieveStripePayments({
                             organisationId,
                             connectionId: connection.id,
                         });
 
                         if (!err && fetched && connection.entityId) {
+                            hasMoreDict[connection.id] = more;
                             let filteredFetched = fetched;
                             // Filter by date range if provided
                             if (from !== undefined || to !== undefined) {
@@ -121,6 +128,7 @@ export function useCharges(params: UseChargesParams | string | null): UseCharges
                 );
 
                 setChargesByConnection(chargesDict);
+                setHasMore(hasMoreDict);
                 // Step 4: Cache in sessionStorage (persists for the session)
                 console.log("caching to sessionStorage", cookieKey, "data length:", JSON.stringify(chargesDict).length)
                 setSessionStorage(cookieKey, JSON.stringify(chargesDict));
@@ -138,13 +146,103 @@ export function useCharges(params: UseChargesParams | string | null): UseCharges
         [organisationId, from, to]
     );
 
+    const loadMore = useCallback(async () => {
+        if (!organisationId || !chargesByConnection) return;
+
+        setLoadingMore(true);
+        setError(null);
+
+        try {
+            const connections = await retrieveAllConnections({ organisationId });
+            const stripeConnections = connections.filter(conn => conn.type === 'stripe' && conn.status === 'connected');
+
+            const updatedChargesDict = { ...chargesByConnection };
+            const updatedHasMoreDict = { ...hasMore };
+
+            await Promise.all(
+                stripeConnections.map(async (connection) => {
+                    if (!hasMore[connection.id]) return; // Skip if no more data
+
+                    const existingCharges = chargesByConnection[connection.id] || [];
+                    if (existingCharges.length === 0) return;
+
+                    const lastChargeId = existingCharges[existingCharges.length - 1].id;
+                    const { payments: fetched, hasMore: more, error: err } = await retrieveStripePayments({
+                        organisationId,
+                        connectionId: connection.id,
+                        startingAfter: lastChargeId,
+                    });
+
+                    if (!err && fetched && connection.entityId) {
+                        let filteredFetched = fetched;
+                        // Filter by date range if provided
+                        if (from !== undefined || to !== undefined) {
+                            filteredFetched = filteredFetched.filter(charge => {
+                                const chargeTime = charge.created;
+                                if (from !== undefined && chargeTime < from) return false;
+                                if (to !== undefined && chargeTime > to) return false;
+                                return true;
+                            });
+                        }
+
+                        // Transform Stripe.Charge to ICharge
+                        const charges: ICharge[] = filteredFetched.map(charge => ({
+                            id: charge.id,
+                            type: extractOneTimeOrRecurring(charge.receipt_url as string),
+                            entityId: connection.entityId as string,
+                            status: charge.status === "succeeded" ? "successful" :
+                                charge.refunded ? "refunded" :
+                                    charge.status === "pending" ? "pending" : "failed",
+                            amount: charge.amount / 100,
+                            currency: charge.currency.toUpperCase(),
+                            email: (charge.customer as Stripe.Customer)?.email || "",
+                            description: charge.description || "",
+                            receipt_url: charge.receipt_url || undefined,
+                            paymentMethods: {
+                                brand: charge.payment_method_details?.card?.brand || "",
+                                country: charge.payment_method_details?.card?.country || "",
+                                last4: charge.payment_method_details?.card?.last4 || "",
+                            },
+                            createdAt: new Date(charge.created * 1000).toISOString(),
+                        }));
+
+                        updatedChargesDict[connection.id] = [...existingCharges, ...charges];
+                        updatedHasMoreDict[connection.id] = more;
+                    }
+                })
+            );
+
+            setChargesByConnection(updatedChargesDict);
+            setHasMore(updatedHasMoreDict);
+
+            // Update cache
+            const dateRangeSuffix = from !== undefined || to !== undefined
+                ? `_${from !== undefined ? new Date(from * 1000).toISOString().split('T')[0] : 'start'}_${to !== undefined ? new Date(to * 1000).toISOString().split('T')[0] : 'end'}`
+                : '';
+            const cookieKey = `${organisationId}_${paymentsCookieKey}${dateRangeSuffix}`;
+            setSessionStorage(cookieKey, JSON.stringify(updatedChargesDict));
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Failed to load more charges");
+        } finally {
+            setLoadingMore(false);
+        }
+    }, [organisationId, chargesByConnection, hasMore, from, to]);
+
     useEffect(() => {
         fetchCharges();
     }, [fetchCharges]);
+
+    // Auto-load more data if hasMore is true
+    useEffect(() => {
+        const hasMoreData = Object.values(hasMore).some(value => value === true);
+        if (hasMoreData && !loading && !loadingMore) {
+            loadMore();
+        }
+    }, [hasMore, loading, loadingMore, loadMore]);
 
     const refetch = useCallback(async () => {
         await fetchCharges({ reload: true });
     }, [fetchCharges]);
 
-    return { chargesByConnection, loading, error, refetch };
+    return { chargesByConnection, loading, loadingMore, error, refetch, loadMore, hasMore };
 }

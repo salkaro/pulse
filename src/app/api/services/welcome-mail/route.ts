@@ -65,6 +65,7 @@ export async function POST(request: NextRequest) {
     try {
         // Extract API key from header
         const apiKey = request.headers.get('x-api-key') || request.headers.get('authorization')?.replace('Bearer ', '');
+        console.log(apiKey)
 
         if (!apiKey) {
             return NextResponse.json(
@@ -75,7 +76,7 @@ export async function POST(request: NextRequest) {
 
         // Parse request body
         const body = await request.json();
-        const { entityId, customerEmail, customerName } = body;
+        const { entityId, customerEmail, customerName, organisationId } = body;
 
         // Validate required fields
         if (!entityId) {
@@ -99,14 +100,6 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Step 1: Retrieve entity to get organizationId
-        // We need to find which organization this entity belongs to
-        // Since we don't have organizationId in the request, we need to search for it
-        // Let's get it from the API key structure or require it in the request
-
-        // For now, let's require organisationId in the request body
-        const { organisationId } = body;
-
         if (!organisationId) {
             return NextResponse.json(
                 { error: 'Missing required field: organisationId' },
@@ -114,7 +107,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Validate API key
+        // Step 1: Validate API key
         const { valid, error: validationError } = await validateApiKey(apiKey, organisationId);
         if (!valid) {
             return NextResponse.json(
@@ -206,7 +199,19 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Step 7: Return success response
+        // Step 7: Update automation lastUsed timestamp
+        try {
+            const date = new Date()
+            const automationDocRef = automationsSnapshot.docs[0].ref;
+            await automationDocRef.update({
+                lastUsed: date.getTime(),
+            });
+        } catch (error) {
+            console.error('Error updating automation lastUsed:', error);
+            // Don't fail the request if this update fails
+        }
+
+        // Step 8: Return success response
         return NextResponse.json({
             success: true,
             message: 'Welcome email sent successfully',

@@ -11,3 +11,4 @@ export const organisationCookieKey = "organisation";
 export const subscriptionsCookieKey = "subscriptions";
 export const automationsCookieKey = "automations";
 export const domainsCookieKey = "domains";
+export const analyticsCookieKey = "analytics";

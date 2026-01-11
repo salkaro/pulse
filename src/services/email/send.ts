@@ -97,7 +97,7 @@ function generateEmailHTML(template: IEmailTemplate): string {
                     <tr>
                         <td style="padding: 24px 40px; border-top: 1px solid #e5e7eb; text-align: center;">
                             ${footer.signOff ? `<p style="margin: 0 0 4px; font-size: 14px; color: #374151;">${footer.signOff}</p>` : ''}
-                            ${footer.teamName ? `<p style="margin: 0 0 16px; font-size: 14px; font-weight: 500; color: #111827;">${footer.teamName}</p>` : ''}
+                            ${footer.teamName ? `<p style="margin: 0 0 16px; font-size: 14px; font-weight: 500; color: #111827;">The ${footer.teamName} Team</p>` : ''}
                             ${footer.unsubscribeText ? `<p style="margin: 16px 0 0; font-size: 12px; color: #9ca3af;">${footer.unsubscribeText}</p>` : ''}
                             ${footer.address ? `<p style="margin: 4px 0 0; font-size: 12px; color: #9ca3af;">${footer.address}</p>` : ''}
                         </td>

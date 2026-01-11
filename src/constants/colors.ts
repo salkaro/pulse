@@ -15,3 +15,8 @@ export const colors = [
     '#a855f7', 
     '#d946ef', 
 ]
+
+
+export const Colors = {
+    "google": "#F9AB00"
+}

@@ -56,8 +56,8 @@ const AddMemberDialog: React.FC<Props> = ({ organisation, disabled }) => {
 
     const roleInfo = {
         "viewer": "Can view data and dashboard, but cannot make any changes.",
-        "developer": "Can read data and add api keys, but cannot edit organisation data.",
-        "admin": "Full access to the organisation, including managing users, devices, and settings.",
+        "developer": "Can read data and add api keys, but cannot edit organisation data or employees.",
+        "admin": "Full access to the organisation and entities",
     };
 
     async function handleSubmit() {

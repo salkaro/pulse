@@ -12,22 +12,23 @@ import { organisationsCol, usersCol } from "@/constants/collections";
 import { FieldValue } from "firebase-admin/firestore";
 
 
-export async function joinOrganisationAdmin({ code, uid, firstname, lastname }: { code: string; uid: string; firstname?: string; lastname?: string }): Promise<{ error?: string }> {
+export async function joinOrganisationAdmin({ code, uid, firstname, lastname }: { code: string; uid: string; firstname?: string; lastname?: string }): Promise<{ success?: boolean, orgId?: string, error?: string }> {
     try {
         // Step 1: Fetch invite using collection group query
-        // Since invite codes are now in subcollections, we use collectionGroup
-        const inviteQuery = await firestoreAdmin
+        // First, try to find the invite across all organisations using the document ID
+        const inviteCollectionGroupQuery = await firestoreAdmin
             .collectionGroup('invite-codes')
-            .where('id', '==', code)
-            .limit(1)
             .get();
 
-        if (inviteQuery.empty) {
+        // Find the invite document that matches the code (document ID)
+        const inviteDoc = inviteCollectionGroupQuery.docs.find(doc => doc.id === code);
+
+        if (!inviteDoc) {
             throw new Error("Invalid invite code");
         }
 
-        const inviteRef = inviteQuery.docs[0].ref;
-        const inviteSnap = inviteQuery.docs[0];
+        const inviteRef = inviteDoc.ref;
+        const inviteSnap = inviteDoc;
 
         // Step 2: Check remaining uses
         const invite = inviteSnap.data() as IMemberInvite;
@@ -84,7 +85,7 @@ export async function joinOrganisationAdmin({ code, uid, firstname, lastname }: 
             members: FieldValue.increment(1),
         });
 
-        return {}
+        return { success: true, orgId: orgId }
     } catch (error) {
         console.error("joinOrganisationAdmin error:", error);
         return { error: `${error}` }

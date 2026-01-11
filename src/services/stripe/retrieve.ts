@@ -4,11 +4,15 @@ import Stripe from "stripe";
 import { retrieveConnectionByType, retrieveConnection } from "@/services/connections/retrieve";
 import { ICustomer } from "@/models/customer";
 
+const LIMIT = 100;
+
 export async function retrieveStripeCustomers({
     organisationId,
+    startingAfter,
 }: {
     organisationId: string;
-}): Promise<{ customers: ICustomer[] | null; error: string | null }> {
+    startingAfter?: string;
+}): Promise<{ customers: ICustomer[] | null; hasMore: boolean; error: string | null }> {
     try {
         // Get the Stripe connection for this organization
         const connection = await retrieveConnectionByType({
@@ -19,6 +23,7 @@ export async function retrieveStripeCustomers({
         if (!connection || !connection.accessToken) {
             return {
                 customers: null,
+                hasMore: false,
                 error: "No Stripe connection found",
             };
         }
@@ -26,9 +31,10 @@ export async function retrieveStripeCustomers({
         // Initialize Stripe with the connected account's access token
         const stripe = new Stripe(connection.accessToken);
 
-        // Retrieve all customers from the connected Stripe account
+        // Retrieve customers from the connected Stripe account
         const customers = await stripe.customers.list({
-            limit: 100, // Adjust as needed
+            limit: LIMIT,
+            starting_after: startingAfter,
         });
 
         // Map Stripe customers to ICustomer format
@@ -44,12 +50,14 @@ export async function retrieveStripeCustomers({
 
         return {
             customers: mappedCustomers,
+            hasMore: customers.data.length === LIMIT,
             error: null,
         };
     } catch (error) {
         console.error("Error retrieving Stripe customers:", error);
         return {
             customers: null,
+            hasMore: false,
             error: error instanceof Error ? error.message : "Failed to retrieve customers",
         };
     }
@@ -58,10 +66,12 @@ export async function retrieveStripeCustomers({
 export async function retrieveStripePayments({
     organisationId,
     connectionId,
+    startingAfter,
 }: {
     organisationId: string;
     connectionId: string;
-}): Promise<{ payments: Stripe.Charge[] | null; error: string | null }> {
+    startingAfter?: string;
+}): Promise<{ payments: Stripe.Charge[] | null; hasMore: boolean; error: string | null }> {
     try {
         // Get the specific Stripe connection by connectionId
         const connection = await retrieveConnection({
@@ -72,6 +82,7 @@ export async function retrieveStripePayments({
         if (!connection || !connection.accessToken) {
             return {
                 payments: null,
+                hasMore: false,
                 error: "No Stripe connection found",
             };
         }
@@ -79,20 +90,23 @@ export async function retrieveStripePayments({
         // Initialize Stripe with the connected account's access token
         const stripe = new Stripe(connection.accessToken);
 
-        // Retrieve all charges (payments) from the connected Stripe account
+        // Retrieve charges (payments) from the connected Stripe account
         const charges = await stripe.charges.list({
-            limit: 100,
+            limit: LIMIT,
             expand: ['data.customer', 'data.invoice'],
+            starting_after: startingAfter,
         });
 
         return {
             payments: charges.data,
+            hasMore: charges.data.length === LIMIT,
             error: null,
         };
     } catch (error) {
         console.error("Error retrieving Stripe payments:", error);
         return {
             payments: null,
+            hasMore: false,
             error: error instanceof Error ? error.message : "Failed to retrieve payments",
         };
     }
@@ -100,9 +114,11 @@ export async function retrieveStripePayments({
 
 export async function retrieveStripeSubscriptions({
     organisationId,
+    startingAfter,
 }: {
     organisationId: string;
-}): Promise<{ subscriptions: Stripe.Subscription[] | null; error: string | null }> {
+    startingAfter?: string;
+}): Promise<{ subscriptions: Stripe.Subscription[] | null; hasMore: boolean; error: string | null }> {
     try {
         // Get the Stripe connection for this organization
         const connection = await retrieveConnectionByType({
@@ -113,6 +129,7 @@ export async function retrieveStripeSubscriptions({
         if (!connection || !connection.accessToken) {
             return {
                 subscriptions: null,
+                hasMore: false,
                 error: "No Stripe connection found",
             };
         }
@@ -120,17 +137,22 @@ export async function retrieveStripeSubscriptions({
         // Initialize Stripe with the connected account's access token
         const stripe = new Stripe(connection.accessToken);
 
-        // Retrieve all active subscriptions
-        const subscriptions = await stripe.subscriptions.list({ limit: 100 });
+        // Retrieve subscriptions
+        const subscriptions = await stripe.subscriptions.list({
+            limit: LIMIT,
+            starting_after: startingAfter,
+        });
 
         return {
             subscriptions: subscriptions.data,
+            hasMore: subscriptions.data.length === LIMIT,
             error: null,
         };
     } catch (error) {
         console.error("Error retrieving Stripe subscriptions:", error);
         return {
             subscriptions: null,
+            hasMore: false,
             error: error instanceof Error ? error.message : "Failed to retrieve subscriptions",
         };
     }
@@ -139,10 +161,12 @@ export async function retrieveStripeSubscriptions({
 export async function retrieveStripeInvoices({
     organisationId,
     connectionId,
+    startingAfter,
 }: {
     organisationId: string;
     connectionId: string;
-}): Promise<{ invoices: Stripe.Invoice[] | null; error: string | null }> {
+    startingAfter?: string;
+}): Promise<{ invoices: Stripe.Invoice[] | null; hasMore: boolean; error: string | null }> {
     try {
         // Get the Stripe connection for this organization
         const connection = await retrieveConnection({
@@ -153,6 +177,7 @@ export async function retrieveStripeInvoices({
         if (!connection || !connection.accessToken) {
             return {
                 invoices: null,
+                hasMore: false,
                 error: "No Stripe connection found",
             };
         }
@@ -160,19 +185,22 @@ export async function retrieveStripeInvoices({
         // Initialize Stripe with the connected account's access token
         const stripe = new Stripe(connection.accessToken);
 
-        // Retrieve all active subscriptions
+        // Retrieve invoices
         const invoices = await stripe.invoices.list({
-            limit: 100
+            limit: LIMIT,
+            starting_after: startingAfter,
         });
 
         return {
             invoices: invoices.data,
+            hasMore: invoices.data.length === LIMIT,
             error: null,
         };
     } catch (error) {
         console.error("Error retrieving Stripe invoices:", error);
         return {
             invoices: null,
+            hasMore: false,
             error: error instanceof Error ? error.message : "Failed to retrieve invoices",
         };
     }

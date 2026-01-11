@@ -73,7 +73,7 @@ const Connection: React.FC<Props> = ({
             if (type === 'stripe') {
                 window.location.href = '/api/connections/stripe/connect';
             } else if (type === 'google') {
-                toast.info('Google OAuth coming soon');
+                window.location.href = '/api/connections/google/connect';
             }
         }
     };

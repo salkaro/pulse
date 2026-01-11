@@ -1,9 +1,9 @@
-import Page from "@/components/main/dashboard/Page";
+import Page from "@/components/main/internal-tools/Page";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Dashboard",
-    description: "Dashboard",
+    title: "Internal Tools",
+    description: "Internal Tools",
     robots: {
         index: false,
         follow: false,
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     },
 };
 
-export default function Dashboard() {
+export default function InternalTools() {
     return (
         <Page />
     );
