@@ -17,7 +17,7 @@ import { useEffect, useRef, useState } from "react"
 import { IoMdEye, IoMdEyeOff } from "react-icons/io"
 import { FaRegCheckCircle } from "react-icons/fa"
 import { doc, updateDoc } from "firebase/firestore"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { signIn } from "next-auth/react"
 
 function SignUpForm({
@@ -25,6 +25,8 @@ function SignUpForm({
     ...props
 }: React.ComponentProps<"form">) {
     const [isClient, setIsClient] = useState(false);
+    const searchParams = useSearchParams();
+    const inviteId = searchParams.get('inviteId');
 
     // Inputs
     const [email, setEmail] = useState<string>("");
@@ -148,7 +150,9 @@ function SignUpForm({
                     }
 
                     clearInterval(checkVerificationInterval);
-                    router.push(`/onboarding`);
+                    // If there's an inviteId, pass it to the onboarding page
+                    const onboardingUrl = inviteId ? `/onboarding?inviteId=${inviteId}` : '/onboarding';
+                    router.push(onboardingUrl);
                 }
             } catch (error) {
                 console.error("Error in verification check:", error);

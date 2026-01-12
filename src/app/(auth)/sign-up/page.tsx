@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 // External Imports
 import { Metadata } from "next";
+import { Suspense } from "react";
 
 
 export const metadata: Metadata = {
@@ -44,7 +45,9 @@ export default function SignUp() {
                 </div>
                 <div className="flex flex-1 items-center justify-center">
                     <div className="w-full max-w-xs">
-                        <SignUpForm />
+                        <Suspense fallback={<div>Loading...</div>}>
+                            <SignUpForm />
+                        </Suspense>
                     </div>
                 </div>
             </div>

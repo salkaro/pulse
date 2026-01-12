@@ -48,7 +48,7 @@ const Page = () => {
             {hasLevelTwoAccess && (
                 <div className='space-y-8 mt-4'>
                     <div className="flex justify-between items-center">
-                        {hasLevelThreeAccess && <ActiveInviteCodesDialog orgId={organisation?.id as string} />}
+                        {hasLevelThreeAccess && <ActiveInviteCodesDialog orgId={organisation?.id as string} organisation={organisation} />}
                         {hasLevelThreeAccess && <AddMemberDialog organisation={organisation as IOrganisation} />}
                     </div>
                     <Separator className='data-[orientation=horizontal]:h-0.5 ' />

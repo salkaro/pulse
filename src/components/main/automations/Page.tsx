@@ -8,12 +8,16 @@ import { useOrganisation } from '@/hooks/useOrganisation'
 import { Skeleton } from '@/components/ui/skeleton'
 import FeatureNotIncluded from '@/components/ui/feature-not-included'
 import NoEntityFound from '@/components/ui/no-entity-found'
+import { useSession } from 'next-auth/react'
+import { levelTwoAccess } from '@/constants/access'
 
 const Page = () => {
+    const { data: session } = useSession()
     const { organisation } = useOrganisation()
     const { entities, loading } = useEntities(organisation?.id as string)
     const [isDialogOpen, setIsDialogOpen] = useState(false)
     const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null)
+    const hasEditAccess = levelTwoAccess.includes(session?.user.organisation?.role as string)
 
     const handleAddAutomation = (entityId: string) => {
         setSelectedEntityId(entityId)
@@ -48,6 +52,7 @@ const Page = () => {
                         entity={entity}
                         organisationId={organisation?.id ?? null}
                         onAddAutomation={handleAddAutomation}
+                        canEdit={hasEditAccess}
                     />
                 ))}
 
@@ -56,12 +61,14 @@ const Page = () => {
                 )}
             </div>
 
-            <AddAutomationDialog
-                open={isDialogOpen}
-                onOpenChange={setIsDialogOpen}
-                entityId={selectedEntityId}
-                organisationId={organisation?.id ?? null}
-            />
+            {hasEditAccess && (
+                <AddAutomationDialog
+                    open={isDialogOpen}
+                    onOpenChange={setIsDialogOpen}
+                    entityId={selectedEntityId}
+                    organisationId={organisation?.id ?? null}
+                />
+            )}
         </>
     )
 }

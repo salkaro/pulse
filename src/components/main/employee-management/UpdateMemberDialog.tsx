@@ -13,7 +13,6 @@ import { Input } from "@/components/ui/input"
 import { Separator } from '@/components/ui/separator'
 import { toast } from 'sonner'
 import { Loader2Icon } from 'lucide-react'
-import { withTokenRefresh } from '@/utils/token-refresh'
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu'
 import { IUser } from '@/models/user'
 import { Label } from '@/components/ui/label'
@@ -80,6 +79,7 @@ const UpdateMemberDialog: React.FC<Props> = ({ member, organisation, refetch }) 
                         <Label>First Name</Label>
                         <Input
                             type="text"
+                            disabled
                             value={member.firstname as string}
                             readOnly
                         />
@@ -88,6 +88,7 @@ const UpdateMemberDialog: React.FC<Props> = ({ member, organisation, refetch }) 
                         <Label>Last Name</Label>
                         <Input
                             type="text"
+                            disabled
                             value={member.lastname as string}
                             readOnly
                         />

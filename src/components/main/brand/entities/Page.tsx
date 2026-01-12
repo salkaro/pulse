@@ -17,18 +17,22 @@ import { Button } from "@/components/ui/button"
 import { useState } from "react"
 import ImageUploadDialog from "@/components/main/settings/dialogs/ImageUploadDialog"
 import { toast } from "sonner"
+import { useSession } from "next-auth/react"
+import { levelTwoAccess } from "@/constants/access"
 
 // Helper component for individual image slot
 const ImageSlot = ({
     label,
     imageUrl,
     onUpload,
-    onDelete
+    onDelete,
+    canEdit = true
 }: {
     label: string;
     imageUrl?: string;
     onUpload: () => void;
     onDelete?: () => void;
+    canEdit?: boolean;
 }) => {
     const [copied, setCopied] = useState(false)
 
@@ -46,7 +50,7 @@ const ImageSlot = ({
         <div className="relative aspect-video w-full bg-muted rounded-lg overflow-hidden border group hover:border-primary transition-colors">
             {imageUrl ? (
                 <>
-                    <div className="cursor-pointer w-full h-full" onClick={onUpload}>
+                    <div className={canEdit ? "cursor-pointer w-full h-full" : "w-full h-full"} onClick={canEdit ? onUpload : undefined}>
                         <Image
                             src={imageUrl}
                             alt={label}
@@ -54,9 +58,11 @@ const ImageSlot = ({
                             className="object-contain"
                         />
                         {/* Hover overlay */}
-                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <ImageIcon className="w-8 h-8 text-white" />
-                        </div>
+                        {canEdit && (
+                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <ImageIcon className="w-8 h-8 text-white" />
+                            </div>
+                        )}
                     </div>
                     {/* Copy button */}
                     <Button
@@ -72,7 +78,7 @@ const ImageSlot = ({
                         )}
                     </Button>
                     {/* Delete button */}
-                    {onDelete && (
+                    {onDelete && canEdit && (
                         <Button
                             variant="destructive"
                             size="icon"
@@ -87,12 +93,21 @@ const ImageSlot = ({
                     )}
                 </>
             ) : (
-                <div className="absolute inset-0 flex flex-col items-center justify-center p-4 cursor-pointer" onClick={onUpload}>
-                    <ImageIcon className="h-8 w-8 text-muted-foreground mb-2 group-hover:text-primary transition-colors" />
-                    <p className="text-xs text-muted-foreground text-center group-hover:text-primary transition-colors">
-                        {label}
-                    </p>
-                </div>
+                canEdit ? (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center p-4 cursor-pointer" onClick={onUpload}>
+                        <ImageIcon className="h-8 w-8 text-muted-foreground mb-2 group-hover:text-primary transition-colors" />
+                        <p className="text-xs text-muted-foreground text-center group-hover:text-primary transition-colors">
+                            {label}
+                        </p>
+                    </div>
+                ) : (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
+                        <ImageIcon className="h-8 w-8 text-muted-foreground/50 mb-2" />
+                        <p className="text-xs text-muted-foreground/50 text-center">
+                            No image
+                        </p>
+                    </div>
+                )
             )}
         </div>
     )
@@ -151,11 +166,15 @@ const GalleryCard = ({ title, images, description }: { title: string; images?: s
 const Page = () => {
     const searchParams = useSearchParams()
     const id = searchParams.get("id")
+    const { data: session } = useSession()
     const { organisation } = useOrganisation()
     const { entities, loading, refetch } = useEntities(organisation?.id as string)
 
     // Find the entity matching the id from the query
     const entity: IEntity | undefined = entities?.find(e => e.id === id)
+
+    // Access control
+    const hasEditAccess = levelTwoAccess.includes(session?.user.organisation?.role as string)
 
     // Image upload dialog state
     const [imageDialogOpen, setImageDialogOpen] = useState(false)

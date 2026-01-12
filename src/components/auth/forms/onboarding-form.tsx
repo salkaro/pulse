@@ -12,7 +12,7 @@ import { joinOrganisationAdmin } from "@/services/firebase/admin-update";
 import { useEffect, useRef, useState } from "react";
 import { Loader2Icon } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { sendWelcomeEmail } from "@/services/pulse/send-welcome-email";
 
@@ -20,6 +20,8 @@ import { sendWelcomeEmail } from "@/services/pulse/send-welcome-email";
 const OnboardingForm = () => {
     const { data: session, status } = useSession();
     const toastShownRef = useRef(false);
+    const searchParams = useSearchParams();
+    const inviteIdFromUrl = searchParams.get('inviteId');
 
     const router = useRouter();
     const [loading, setLoading] = useState(false);
@@ -31,11 +33,11 @@ const OnboardingForm = () => {
     const [lastname, setLastname] = useState("");
 
     // Stage 1: Org action choice
-    const [orgAction, setOrgAction] = useState<"create" | "join">("create")
+    const [orgAction, setOrgAction] = useState<"create" | "join">(inviteIdFromUrl ? "join" : "create")
     // Create
     const [orgName, setOrgName] = useState("");
     // Join
-    const [joinCode, setJoinCode] = useState("")
+    const [joinCode, setJoinCode] = useState(inviteIdFromUrl || "")
 
     const handleNextStage = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()

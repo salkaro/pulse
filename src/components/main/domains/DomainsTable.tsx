@@ -22,9 +22,10 @@ import { domainsCookieKey } from '@/constants/cookies'
 interface Props {
     organisationId: string
     onViewDomain?: (domain: IDomain) => void
+    canEdit?: boolean;
 }
 
-const DomainsTable: React.FC<Props> = ({ organisationId, onViewDomain }) => {
+const DomainsTable: React.FC<Props> = ({ organisationId, onViewDomain, canEdit }) => {
     const { domains, loading, error, refetch } = useDomains(organisationId)
     const [searchQuery, setSearchQuery] = useState('')
     const [page, setPage] = useState(1)
@@ -154,6 +155,7 @@ const DomainsTable: React.FC<Props> = ({ organisationId, onViewDomain }) => {
                                 value={searchQuery}
                                 onChange={(e) => handleSearchChange(e.target.value)}
                                 className="max-w-sm ml-1"
+                                disabled={!canEdit}
                             />
                             <div className="flex items-center gap-3 p-2 border rounded-lg">
                                 <div className="p-2 rounded-md bg-purple-500/10">

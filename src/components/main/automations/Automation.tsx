@@ -16,9 +16,10 @@ interface Props {
     entity: IEntity;
     organisationId: string | null;
     onAddAutomation: (entityId: string) => void;
+    canEdit: boolean;
 }
 
-const Automation: React.FC<Props> = ({ entity, organisationId, onAddAutomation }) => {
+const Automation: React.FC<Props> = ({ entity, organisationId, onAddAutomation, canEdit }) => {
     const { automations, loading, refetch } = useAutomations(organisationId, entity.id)
     const [selectedAutomation, setSelectedAutomation] = useState<IAutomation | null>(null)
     const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -124,7 +125,7 @@ const Automation: React.FC<Props> = ({ entity, organisationId, onAddAutomation }
             })}
 
             {/* Add automation button - only show if there are available automations */}
-            {hasAvailableAutomations && (
+            {hasAvailableAutomations && canEdit && (
                 <Button
                     onClick={() => handleAddAutomation()}
                     size="icon"
@@ -136,7 +137,7 @@ const Automation: React.FC<Props> = ({ entity, organisationId, onAddAutomation }
             )}
 
             {/* Automation Configuration Dialog */}
-            {selectedAutomation && selectedAutomation.type === 'email-on-sign-up' && (
+            {canEdit && selectedAutomation && selectedAutomation.type === 'email-on-sign-up' && (
                 <EmailOnSignUpDialog
                     open={isDialogOpen}
                     onOpenChange={setIsDialogOpen}

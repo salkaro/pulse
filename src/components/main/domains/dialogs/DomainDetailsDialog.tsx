@@ -24,13 +24,15 @@ interface Props {
     onOpenChange: (open: boolean) => void
     domain: IDomain
     organisationId: string | null
+    canEdit?: boolean;
 }
 
 const DomainDetailsDialog: React.FC<Props> = ({
     open,
     onOpenChange,
     domain,
-    organisationId
+    organisationId,
+    canEdit
 }) => {
     const [copiedRecord, setCopiedRecord] = useState<string | null>(null)
     const [isVerifying, setIsVerifying] = useState(false)
@@ -132,7 +134,7 @@ const DomainDetailsDialog: React.FC<Props> = ({
                         {!domain.emailEnabled && (
                             <Button
                                 onClick={handleVerify}
-                                disabled={isVerifying}
+                                disabled={isVerifying || !canEdit}
                                 size="sm"
                             >
                                 <RefreshCw className={`w-4 h-4 mr-2 ${isVerifying ? 'animate-spin' : ''}`} />

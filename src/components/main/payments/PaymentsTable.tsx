@@ -158,7 +158,7 @@ const PaymentsTable: React.FC<Props> = ({ organisationId }) => {
                                         <TableRow key={charge.id}>
                                             <TableCell className="rounded-l-lg">
                                                 <div className='flex items-center gap-4'>
-                                                    <ProfileImage image={image} name={entity?.name} email={charge.email}/>
+                                                    <ProfileImage image={image} name={entity?.name} email={charge.email} />
                                                     <div className='flex flex-col'>
                                                         <span className='font-medium'>{entity?.name}</span>
                                                     </div>

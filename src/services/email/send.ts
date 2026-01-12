@@ -29,7 +29,7 @@ function generateEmailHTML(template: IEmailTemplate): string {
     {
       "@context": "https://schema.org",
       "@type": "Organization",
-      "name": "${footer.teamName}",
+      "name": "The ${footer.teamName} Team",
       "logo": "${header.logoUrl}"
     }
     </script>

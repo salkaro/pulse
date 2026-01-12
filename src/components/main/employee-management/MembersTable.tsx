@@ -19,7 +19,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Skeleton } from '../../ui/skeleton';
 
 // External Imports
-import { ChevronLeft, ChevronRight, Users } from 'lucide-react';
+import { ChevronLeft, ChevronRight, RefreshCw, Users } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import React, { useState } from 'react'
 import { toast } from 'sonner';
@@ -27,6 +27,7 @@ import { useSession } from 'next-auth/react';
 import { memberLimits, TABLE_SIZE_LIMIT } from '@/constants/limits';
 import { membersSearchFilter } from '@/utils/filters';
 import { ProfileImage } from '@/components/icons/icons';
+import { useOrganisationInvites } from '@/hooks/useOrganisationInvites';
 
 
 interface Props {
@@ -34,6 +35,7 @@ interface Props {
 }
 const MembersTable: React.FC<Props> = ({ organisation }) => {
     const { data: session } = useSession();
+    const { refetch: refetchInviteCodes } = useOrganisationInvites(organisation.id);
     const { members, loading: loadingMembers, error: membersError, refetch: refetchMembers } = useOrganisationMembers(organisation?.id as string);
 
     // Limits
@@ -42,6 +44,7 @@ const MembersTable: React.FC<Props> = ({ organisation }) => {
     const membersCount = organisation?.members || 0;
 
     // Search
+    const [refreshing, setRefreshing] = useState(loadingMembers)
     const [searchQuery, setSearchQuery] = useState('')
 
     // Filter members based on search query
@@ -74,10 +77,17 @@ const MembersTable: React.FC<Props> = ({ organisation }) => {
             });
         }
     }
+
+    async function handleRefresh() {
+        setRefreshing(false);
+        await refetchInviteCodes();
+        await refetchMembers();
+    }
+
     return (
         <div>
             <div className="overflow-x-auto">
-                {loadingMembers ? (
+                {(loadingMembers && refreshing) ? (
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
                             <Skeleton className="h-10 w-80" />
@@ -105,20 +115,33 @@ const MembersTable: React.FC<Props> = ({ organisation }) => {
                     <NoContent text={membersError} />
                 ) : (
                     <>
-                        <div className="pb-4 pr-2 flex items-center justify-between">
-                            <Input
-                                placeholder="Search by name, email, or role..."
-                                value={searchQuery}
-                                onChange={(e) => handleSearchChange(e.target.value)}
-                                className="max-w-sm ml-1"
-                            />
-                            <div className="flex items-center gap-3 p-2 border rounded-lg">
-                                <div className="p-2 rounded-md bg-blue-500/10">
-                                    <Users className="w-5 h-5 text-blue-500" />
+                        <div className="pb-4 pr-2 flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
+                            <div className="flex items-center gap-2 w-full">
+                                <Input
+                                    placeholder="Search by name, email, or role..."
+                                    value={searchQuery}
+                                    onChange={(e) => handleSearchChange(e.target.value)}
+                                    className="flex-1 w-full md:max-w-sm ml-1"
+                                />
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className='shadow-none'
+                                    onClick={handleRefresh}
+                                    disabled={loadingMembers}
+                                >
+                                    <RefreshCw className={`w-4 h-4 ${loadingMembers ? 'animate-spin' : ''}`} />
+                                </Button>
+                            </div>
+                            <div className="flex items-center justify-end w-full">
+                                <div className="flex items-center gap-3 p-2 border rounded-lg">
+                                    <div className="p-2 rounded-md bg-blue-500/10">
+                                        <Users className="w-5 h-5 text-blue-500" />
+                                    </div>
+                                    <p className="text-xl font-semibold">
+                                        {membersCount} / {memberLimit === -1 ? 'Unlimited' : memberLimit}
+                                    </p>
                                 </div>
-                                <p className="text-xl font-semibold">
-                                    {membersCount} / {memberLimit === -1 ? 'Unlimited' : memberLimit}
-                                </p>
                             </div>
                         </div>
                         <Table>
